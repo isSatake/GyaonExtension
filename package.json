@@ -1,0 +1,25 @@
+{
+  "name": "gyaonextension",
+  "version": "1.0.0",
+  "description": "chrome extension of gyaon",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stkay/GyaonExtension.git"
+  },
+  "author": "hykwtakumin <hykwtakumin@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stkay/GyaonExtension/issues"
+  },
+  "homepage": "https://github.com/stkay/GyaonExtension#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/chrome": "^0.0.68",
+    "browserify": "^16.2.2",
+    "typescript": "^2.9.1"
+  }
+}
