@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "clean": "rm -rf dist/*",
-    "build": "npm run clean && ./node_modules/.bin/tsc && cp ./src/manifest.json ./dist && cp ./src/option/option.html ./dist/option",
+    "tsc": "./node_modules/.bin/tsc",
+    "copy": "cp ./src/manifest.json ./dist && cp -r ./src/pages ./dist/pages && cp -r ./src/icons ./dist/icons",
+    "build": "npm run clean && npm run copy && npm run tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

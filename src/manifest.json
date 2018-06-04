@@ -10,29 +10,31 @@
     "activeTab",
     "tabs",
     "storage",
-    "cookies",
+    "tabCapture",
+    "downloads",
     "clipboardWrite",
     "contextMenus",
-    "notifications"
+    "notifications",
+    "clipboardRead",
+    "clipboardWrite",
+    "<all_urls>"
   ],
   "content_scripts": [
     {
       "matches" : [ "<all_urls>"],
       "js": [
-        "content.js"
+        "scripts/content.js"
       ],
       "run_at" : "document_idle"
     }
   ],
   "background": {
-    "scripts": [
-      "background.js"
-    ],
+    "page": "pages/background.html",
     "persistent": true
   },
-  "options_page": "option/option.html",
+  "options_page": "pages/option.html",
   "options_ui": {
-    "page": "option/option.html",
+    "page": "pages/option.html",
     "chrome_style": true
   },
   "web_accessible_resources": ["https://gyaon.com/*"],
