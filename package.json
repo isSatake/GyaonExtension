@@ -13,7 +13,7 @@
     "url": "git+https://github.com/stkay/GyaonExtension.git"
   },
   "author": "hykwtakumin <hykwtakumin@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/stkay/GyaonExtension/issues"
   },
