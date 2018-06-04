@@ -4,6 +4,8 @@
   "description": "chrome extension of gyaon",
   "main": "index.js",
   "scripts": {
+    "clean": "rm -rf dist/*",
+    "build": "npm run clean && ./node_modules/.bin/tsc && cp ./src/manifest.json ./dist && cp ./src/option/option.html ./dist/option",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,7 +21,6 @@
   "dependencies": {},
   "devDependencies": {
     "@types/chrome": "^0.0.68",
-    "browserify": "^16.2.2",
     "typescript": "^2.9.1"
   }
 }
