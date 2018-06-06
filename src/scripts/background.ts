@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 //通知用関数
 function notify(message) {
     const notifOption = {
@@ -21,6 +23,9 @@ chrome.runtime.onInstalled.addListener(details => {
     //インストールしたらまずGyaonIDを設定してもらう
     // chrome.runtime.openOptionsPage();
     //
+    axios.get('https://www.google.co.jp/').then(response => {
+        console.log(response);
+    })
 });
 
 const backGroundTextArea = document.createElement("textArea");
