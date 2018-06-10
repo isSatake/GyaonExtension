@@ -35,7 +35,7 @@
   "options_page": "pages/option.html",
   "options_ui": {
     "page": "pages/option.html",
-    "chrome_style": true
+    "open_in_tab": true
   },
   "web_accessible_resources": ["https://gyaon.com/*"],
   "manifest_version": 2

@@ -3,15 +3,49 @@
 <head>
     <meta charset="utf-8" />
     <title>Options</title>
+    <link rel="stylesheet" href="../styles/option.css">
     <script src="../scripts/option.js"></script>
 </head>
 <body>
+<a href="https://github.com/stkay/GyaonExtension"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+<div class="outer">
+    <div class="inner">
+        <div class="logo">
+            <img src="../icons/bigicon.png">
+        </div>
 
-<label for="idForm">
-    <p id="clientUserName"></p>
-    <input type="text" id="idForm" placeholder="input your GyaonID">
-    <input type="button" value="Apply" id="idButton">
-</label>
+        <h4>🎙ようこそ, Gyaon Extensionへ!🎙</h4>
+
+        <p>
+            Gyaon Extensionをインストールしていただきありがとうございます。
+        </p>
+
+        <p>
+            この拡張機能は録音のためマイクにアクセスします。
+            その許可を得るためのポップアップが表示されるので「許可」を押してください。
+            また、音声をGyaon.comにアップロードするためにご利用のGyaon IDを登録する必要があります。
+            以下のフォームからご登録ください。
+        </p>
+
+        <label for="idForm">
+            <p id="clientUserName"></p>
+            <input type="text" id="idForm" placeholder="input your GyaonID">
+            <button id="idButton">登録する</button>
+        </label>
+
+        <h4>使い方</h4>
+        <p>
+            アドレスバーの横に表示されるマイクのアイコンをクリックすると録音が開始されます。
+            もう一度アイコンをクリックすると録画が終了し、音声がGyaon.comへアップロードされます。
+            アップロードが完了されるとクリップボードへその音声へのリンクがコピーされます。
+        </p>
+
+        <p class="credit">
+            Developed by <a href="https://github.com/stkay">stkay</a> and <a href="https://github.com/Hykwtakumin">hykwtakumin</a>
+        </p>
+
+    </div>
+</div>
 
 </body>
 </html>

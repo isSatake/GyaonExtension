@@ -6,8 +6,8 @@
   "scripts": {
     "clean": "rm -rf dist/*",
     "tsc": "./node_modules/.bin/tsc",
-    "copy": "cp ./src/manifest.json ./dist && cp -r ./src/pages ./dist/pages && cp -r ./src/icons ./dist/icons",
-    "build": "npm run clean && npm run copy && npm run tsc",
+    "copy": "cp ./src/manifest.json ./dist && cp -r ./src/pages ./dist/pages && cp -r ./src/icons ./dist/icons && cp -r ./src/styles ./dist/styles",
+    "build": "npm run clean && npm run copy && npm run tsc && npm run browserify",
     "browserify-bg": "browserify ./dist/scripts/background.js -o ./dist/scripts/background.js",
     "browserify-cs": "browserify ./dist/scripts/content.js -o ./dist/scripts/content.js",
     "browserify-op": "browserify ./dist/scripts/option.js -o ./dist/scripts/option.js",

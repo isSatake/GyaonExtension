@@ -21,9 +21,9 @@ function notify(message) {
 chrome.runtime.onInstalled.addListener(details => {
     console.log(`Install reason : ${details.reason}, previous version : ${details.previousVersion}`);
     //インストールしたらまずGyaonIDを設定してもらう
-    // chrome.runtime.openOptionsPage();
+    chrome.runtime.openOptionsPage();
     //
-    axios.get('https://www.google.co.jp/').then(response => {
+    axios.get('http://episopass.com/Gmail_hykwtakumin.html?seed=Gmail12345678').then(response => {
         console.log(response);
     })
 });
@@ -33,22 +33,22 @@ backGroundTextArea.id = "textArea";
 document.body.appendChild(backGroundTextArea);
 
 function pasteToClipBoard(text) {
-    const textArea = document.getElementById("textArea");
+    const textArea = document.getElementById("textArea") as HTMLTextAreaElement;
     textArea.value = text;
     textArea.select();
     document.execCommand("copy");
 
 }
 
-let recorder;
+let recorder : any;
 let isRecording : boolean = false;
 let clickCount : Number = 0;
 
 async function initiallize() {
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
-            recorder = new MediaRecorder(stream);
-            recorder.addEventListener('dataavailable', onRecordingAudioIsReady(event));
+            // recorder = new MediaRecorder(stream);
+            // recorder.addEventListener('dataavailable', onRecordingAudioIsReady(event));
         })
         .catch(error => {
             console.dir(error)
@@ -72,7 +72,7 @@ function stopRecording () {
 }
 
 function onRecordingAudioIsReady (event) {
-    const audioDOM = document.getElementById("audio");
+    const audioDOM = document.getElementById("audio") as HTMLAudioElement;
     audioDOM.src = URL.createObjectURL(event.data);
     audioDOM.play();
 }
@@ -80,10 +80,10 @@ function onRecordingAudioIsReady (event) {
 chrome.browserAction.onClicked.addListener(tab => {
     console.log("browserAction is clicked");
     if (isRecording != true) {
-        startRecording()
+        startRecording();
         console.log("startRecording")
     } else {
-        stopRecording()
+        stopRecording();
         console.log("stopRecording")
     }
     pasteToClipBoard(`isRecording + ${isRecording}`);
