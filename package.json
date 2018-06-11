@@ -25,7 +25,11 @@
   },
   "homepage": "https://github.com/stkay/GyaonExtension#readme",
   "dependencies": {
-    "axios": "^0.18.0"
+    "@types/es6-promise": "^3.3.0",
+    "D": "^1.0.0",
+    "axios": "^0.18.0",
+    "gyaonup": "^0.0.0",
+    "then-chrome": "^1.0.7"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.68",

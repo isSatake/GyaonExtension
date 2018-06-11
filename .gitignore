@@ -63,5 +63,6 @@ typings/
 /.idea/
 /tmp/
 /bin/
+dist.zip
 *.test
 *.swp

@@ -1,4 +1,11 @@
-import axios from 'axios'
+import {upload} from "gyaonup";
+import thenChrome from "then-chrome";
+
+declare var MediaRecorder: any;
+
+// const disabelIcon = chrome.runtime.getURL("/icons/disable.png");
+// const activeIcon = chrome.runtime.getURL("/icons/active.png");
+// const deactiveIcon = chrome.runtime.getURL("/icons/deactive.png");
 
 //通知用関数
 function notify(message) {
@@ -19,13 +26,13 @@ function notify(message) {
 
 //インストール時に実行する
 chrome.runtime.onInstalled.addListener(details => {
+
+    // chrome.browserAction.setIcon(disabelIcon as any);
+    chrome.browserAction.disable();
     console.log(`Install reason : ${details.reason}, previous version : ${details.previousVersion}`);
     //インストールしたらまずGyaonIDを設定してもらう
     chrome.runtime.openOptionsPage();
-    //
-    axios.get('http://episopass.com/Gmail_hykwtakumin.html?seed=Gmail12345678').then(response => {
-        console.log(response);
-    })
+    initialize();
 });
 
 const backGroundTextArea = document.createElement("textArea");
@@ -40,22 +47,83 @@ function pasteToClipBoard(text) {
 
 }
 
-let recorder : any;
-let isRecording : boolean = false;
-let clickCount : Number = 0;
+let recorder: any;
+let isRecording: boolean = false;
 
-async function initiallize() {
-    navigator.mediaDevices.getUserMedia({ audio: true })
+function initialize() {
+    const recordedChunks = [];
+    navigator.mediaDevices.getUserMedia({audio: true})
         .then(stream => {
-            // recorder = new MediaRecorder(stream);
-            // recorder.addEventListener('dataavailable', onRecordingAudioIsReady(event));
+            recorder = new MediaRecorder(stream);
+            recorder.addEventListener('dataavailable', function (event) {
+                recordedChunks.push(event.data);
+                console.dir(recordedChunks);
+
+                const downloadLink = document.getElementById('download') as HTMLAnchorElement;
+                const downloadURL = URL.createObjectURL(new Blob(recordedChunks));
+                console.log(downloadURL);
+                // thenChrome.storage.local.get('gyaonID')
+                //     .then(item => {
+                //         if (item != undefined) {
+                //             upload(item, new Blob(recordedChunks))
+                //                 .then(response => {
+                //                     console.dir(response)
+                //                 })
+                //                 .catch(error => {
+                //                     console.log(error)
+                //                 })
+                //         } else {
+                //             console.log("item is undefined")
+                //         }
+                //     })
+                //     .catch(error => {
+                //         console.log(error)
+                //     })
+
+                //TODO Promise & async-await化
+                chrome.storage.local.get("gyaonID", function (items) {
+                    if (items != undefined) {
+                        const gyaonID = items.gyaonID;
+                        upload(gyaonID, new Blob(recordedChunks))
+                            .then(response => {
+                                console.dir(response);
+                                recordedChunks.length = 0
+                            })
+                            .catch(error => {
+                                console.log(error)
+                            })
+                    } else {
+                        console.log("item is undefined")
+                    }
+                })
+
+                // downloadLink.href = downloadURL;
+                // downloadLink.download = 'acetest.wav';
+                // chrome.downloads.download({
+                //     url:downloadURL,
+                //     filename:'GyaonExtension.wav'
+                // }, error => {
+                //     console.log(error)
+                // });
+
+            });
+            // recorder.addEventListener('stop', function () {
+            //     const downloadLink = document.getElementById('download') as HTMLAnchorElement;
+            //     downloadLink.href = URL.createObjectURL(new Blob(recordedChunks));
+            //     downloadLink.download = 'acetest.wav';
+            // });
         })
         .catch(error => {
             console.dir(error)
         })
 }
 
-function startRecording () {
+async function getGyaonID() {
+    const gyaonID = await thenChrome.storage.local.get('gyaonID');
+    return gyaonID
+}
+
+function startRecording() {
     if (recorder != null) {
         recorder.start();
     } else {
@@ -63,7 +131,7 @@ function startRecording () {
     }
 }
 
-function stopRecording () {
+function stopRecording() {
     if (recorder != null) {
         recorder.stop();
     } else {
@@ -71,19 +139,21 @@ function stopRecording () {
     }
 }
 
-function onRecordingAudioIsReady (event) {
-    const audioDOM = document.getElementById("audio") as HTMLAudioElement;
-    audioDOM.src = URL.createObjectURL(event.data);
-    audioDOM.play();
+function onRecordingAudioIsReady(event) {
+    // const audioDOM = document.getElementById("audio") as HTMLAudioElement;
+    // audioDOM.src = URL.createObjectURL(event.data);
+    // audioDOM.play();
 }
 
 chrome.browserAction.onClicked.addListener(tab => {
     console.log("browserAction is clicked");
     if (isRecording != true) {
         startRecording();
+        // chrome.browserAction.setIcon(activeIcon as any);
         console.log("startRecording")
     } else {
         stopRecording();
+        // chrome.browserAction.setIcon(deactiveIcon as any);
         console.log("stopRecording")
     }
     pasteToClipBoard(`isRecording + ${isRecording}`);
