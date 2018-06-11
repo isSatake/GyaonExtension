@@ -3,9 +3,9 @@ import thenChrome from "then-chrome";
 
 declare var MediaRecorder: any;
 
-// const disabelIcon = chrome.runtime.getURL("/icons/disable.png");
-// const activeIcon = chrome.runtime.getURL("/icons/active.png");
-// const deactiveIcon = chrome.runtime.getURL("/icons/deactive.png");
+const disabelIcon = chrome.runtime.getURL("/icons/disable.png");
+const activeIcon = chrome.runtime.getURL("/icons/active.png");
+const deactiveIcon = chrome.runtime.getURL("/icons/deactive.png");
 
 //通知用関数
 function notify(message) {
@@ -26,9 +26,8 @@ function notify(message) {
 
 //インストール時に実行する
 chrome.runtime.onInstalled.addListener(details => {
-
-    // chrome.browserAction.setIcon(disabelIcon as any);
     chrome.browserAction.disable();
+    chrome.browserAction.setIcon({path : disabelIcon});
     console.log(`Install reason : ${details.reason}, previous version : ${details.previousVersion}`);
     //インストールしたらまずGyaonIDを設定してもらう
     chrome.runtime.openOptionsPage();
@@ -126,6 +125,7 @@ async function getGyaonID() {
 function startRecording() {
     if (recorder != null) {
         recorder.start();
+        chrome.browserAction.setIcon({path : deactiveIcon});
     } else {
         console.log("recorder is null")
     }
@@ -134,6 +134,7 @@ function startRecording() {
 function stopRecording() {
     if (recorder != null) {
         recorder.stop();
+        chrome.browserAction.setIcon({path : deactiveIcon});
     } else {
         console.log("recorder is null")
     }
@@ -149,11 +150,14 @@ chrome.browserAction.onClicked.addListener(tab => {
     console.log("browserAction is clicked");
     if (isRecording != true) {
         startRecording();
-        // chrome.browserAction.setIcon(activeIcon as any);
+        chrome.browserAction.setIcon({path : activeIcon});
+        chrome.browserAction.setBadgeText({text : "REC"});
+        chrome.browserAction.setBadgeBackgroundColor({color : "#c0392b"});
         console.log("startRecording")
     } else {
         stopRecording();
-        // chrome.browserAction.setIcon(deactiveIcon as any);
+        chrome.browserAction.setIcon({path : deactiveIcon});
+        chrome.browserAction.setBadgeText({text : ""});
         console.log("stopRecording")
     }
     pasteToClipBoard(`isRecording + ${isRecording}`);

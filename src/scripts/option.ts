@@ -1,3 +1,5 @@
+import TabIconDetails = chrome.browserAction.TabIconDetails;
+
 window.onload = function() {
     console.log("this is option page");
     const deactiveIcon = chrome.runtime.getURL("/icons/deactive.png");
@@ -14,15 +16,11 @@ window.onload = function() {
         //gyaonIDを保存しておく
         chrome.storage.local.set({gyaonID : `${gyaonID}` });
 
-        chrome.storage.local.get("gyaonID",function (item) {
-            console.log(item);
-        })
-
         navigator.mediaDevices.getUserMedia({audio : true})
             .then(function (stream: MediaStream){
                 console.log("granted")
                 chrome.browserAction.enable()
-                // chrome.browserAction.setIcon(deactiveIcon as any);
+                chrome.browserAction.setIcon({path : deactiveIcon});
             })
             .catch() as Promise<MediaStream>
 

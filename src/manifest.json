@@ -1,8 +1,9 @@
 {
   "name": "GyaonExtension",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Chrome extension for gyaon.com",
   "icons" : {
+    "128": "icons/bigicon.png"
   },
   "browser_action": {
   },
@@ -37,6 +38,12 @@
     "page": "pages/option.html",
     "open_in_tab": true
   },
-  "web_accessible_resources": ["https://gyaon.com/*"],
+  "web_accessible_resources": [
+    "https://gyaon.com/*",
+    "/icons/bigicon.png",
+    "/icons/active.png",
+    "/icons/deactive.png",
+    "/icons/disable.png"
+  ],
   "manifest_version": 2
 }
