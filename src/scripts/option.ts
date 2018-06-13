@@ -1,28 +1,38 @@
-import TabIconDetails = chrome.browserAction.TabIconDetails;
 
-window.onload = function() {
+window.onload = function () {
     console.log("this is option page");
+    const idForm = document.getElementById("idForm") as HTMLTextAreaElement;
+    const idButton = document.getElementById("idButton");
     const deactiveIcon = chrome.runtime.getURL("/icons/deactive.png");
 
-    const idForm = document.getElementById("idForm") as HTMLTextAreaElement ;
-    const idButton = document.getElementById("idButton");
-
-    idButton.addEventListener('click', function (event) {
-        //idFormに入力された文字列をIDとして取得する
-        initExtension(idForm.value)
+    chrome.storage.local.get("gyaonID", item =>{
+        if (item != undefined) {
+            console.log(item.gyaonID);
+            idForm.value = item.gyaonID;
+            initExtension(item.gyaonID)
+        } else {
+            idButton.addEventListener('click', function (event) {
+                // chrome.runtime.sendMessage({message : "initExtension"})
+                initExtension(idForm.value)
+            });
+        }
     });
 
     function initExtension (gyaonID : String) {
-        //gyaonIDを保存しておく
-        chrome.storage.local.set({gyaonID : `${gyaonID}` });
+        chrome.storage.local.set({gyaonID: `${gyaonID}`});
 
-        navigator.mediaDevices.getUserMedia({audio : true})
-            .then(function (stream: MediaStream){
-                console.log("granted")
-                chrome.browserAction.enable()
-                chrome.browserAction.setIcon({path : deactiveIcon});
+        navigator.mediaDevices.getUserMedia({audio: true})
+            .then(stream => {
+                console.log("MIC access granted");
+                chrome.runtime.sendMessage({message: "notification", text: "マイクアクセスが許可されました。ご利用いただけます。"});
+                chrome.browserAction.enable();
+                chrome.browserAction.setIcon({path: deactiveIcon});
             })
-            .catch() as Promise<MediaStream>
-
+            .catch(error => {
+                console.log(error);
+                if (error.name === "NotAllowedError") {
+                    chrome.runtime.sendMessage({message: "notification", text: "マイクアクセスの許可が得られませんでした。"});
+                }
+            })
     }
 };
