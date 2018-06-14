@@ -69,11 +69,26 @@ function pasteToClipBoard(text) {
     textArea.value = text;
     textArea.select();
     document.execCommand("copy");
+}
 
+function sendURLtoScrapbox(text) {
+    const queryInfo = {
+        active: true,
+        windowId: chrome.windows.WINDOW_ID_CURRENT
+    };
+
+    chrome.tabs.query(queryInfo, function (result) {
+        const currentTab = result.shift();
+
+        const sendData = { cmd: "pasteToScrapbox", url : text};
+
+        chrome.tabs.sendMessage(currentTab.id, sendData, function() {});
+    })
 }
 
 let recorder: any;
 let isRecording: boolean = false;
+let isScrapbox: boolean = false;
 
 const recordedChunks = [];
 navigator.mediaDevices.getUserMedia({audio: true})
@@ -118,7 +133,10 @@ navigator.mediaDevices.getUserMedia({audio: true})
                                 const uploadedURL = `${response.data.endpoint}/sound/${response.data.object.key}`;
                                 console.log(`uploadedURL : ${uploadedURL}`);
                                 pasteToClipBoard(uploadedURL);
-                                // notificate("音声をアップロードしました。")
+                                //Scrapboxの場合はオーディオ記法で貼り付ける
+                                if (isScrapbox) {
+                                    sendURLtoScrapbox(uploadedURL)
+                                }
                             } else {
                                 //TODO リトライ処理
                                 console.log("failed to upload");
@@ -191,11 +209,17 @@ function onRecordingAudioIsReady(event) {
 
 chrome.browserAction.onClicked.addListener(tab => {
     console.log("browserAction is clicked");
+    console.dir(tab);
 
     if (chrome.runtime.lastError && chrome.runtime.lastError.message.match(/cannot be scripted/)) {
         window.alert('It is not allowed to use Gyaon extension in this page.');
         chrome.browserAction.disable();
         reloadExtenison();
+    }
+
+    if (tab.url.indexOf("https://scrapbox.io/") !== -1){
+        console.log("this site is scrapbox!");
+        isScrapbox = true;
     }
 
     if (isRecording != true) {
