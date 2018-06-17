@@ -1,6 +1,6 @@
 {
   "name": "GyaonExtension",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Chrome extension for gyaon.com",
   "icons" : {
     "128": "icons/bigicon.png"
@@ -22,7 +22,7 @@
   ],
   "content_scripts": [
     {
-      "matches" : [ "https://scrapbox.io/*"],
+      "matches" : [ "<all_urls>"],
       "js": [
         "scripts/content.js"
       ],
