@@ -5,17 +5,18 @@ window.onload = function () {
     const idButton = document.getElementById("idButton");
     const deactiveIcon = chrome.runtime.getURL("/icons/deactive.png");
 
+    //以前にGyaonIDが設定されていた場合、中身を当該IDにする
     chrome.storage.local.get("gyaonID", item =>{
         if (item != undefined) {
             console.log(item.gyaonID);
             idForm.value = item.gyaonID;
-            initExtension(item.gyaonID)
-        } else {
-            idButton.addEventListener('click', function (event) {
-                // chrome.runtime.sendMessage({message : "initExtension"})
-                initExtension(idForm.value)
-            });
         }
+    });
+
+    //登録ボタンを押すと入力された値をGyaonIDとして登録する
+    idButton.addEventListener('click', function (event) {
+        console.log(`gyaonID is now set : ${idForm.value}`);
+        initExtension(idForm.value);
     });
 
     function initExtension (gyaonID : String) {

@@ -73,7 +73,7 @@ function pasteToClipBoard(text) {
     document.execCommand("copy");
 }
 
-function sendURLtoScrapbox(text) {
+function sendURLtoScrapbox(url, title) {
     const queryInfo = {
         active: true,
         windowId: chrome.windows.WINDOW_ID_CURRENT
@@ -81,8 +81,7 @@ function sendURLtoScrapbox(text) {
 
     chrome.tabs.query(queryInfo, function (result) {
         const currentTab = result.shift();
-
-        const sendData = {cmd: "pasteToScrapbox", url: text};
+        const sendData = {cmd: "pasteToScrapbox", url: url, title: title};
 
         chrome.tabs.sendMessage(currentTab.id, sendData, function () {
         });
@@ -106,13 +105,14 @@ function reNameSoundFile(id: String) {
             }
         })
         .catch(console.error);
-}
+    }
 
 let recorder: any;
 let isRecording: boolean = false;
 let isScrapbox: boolean = false;
 let isRecognizing: boolean = false;
 let recognizedText: String;
+
 
 const recordedChunks = [];
 navigator.mediaDevices.getUserMedia({audio: true})
@@ -157,17 +157,17 @@ navigator.mediaDevices.getUserMedia({audio: true})
                                 const uploadedURL = `${response.data.endpoint}/sound/${response.data.object.key}`;
                                 console.log(`uploadedURL : ${uploadedURL}`);
                                 pasteToClipBoard(uploadedURL);
-                                //Scrapboxの場合はオーディオ記法で貼り付ける
-                                if (isScrapbox) {
-                                    sendURLtoScrapbox(uploadedURL)
-                                }
-
                                 if (recognizedText != undefined) {
                                     console.log("renaming...");
                                     reNameSoundFile(response.data.object.key);
                                 } else {
                                     console.log("something went wrong")
                                 }
+                                //Scrapboxの場合はオーディオ記法で貼り付ける
+                                if (isScrapbox) {
+                                    sendURLtoScrapbox(uploadedURL, recognizedText);
+                                }
+
                             } else {
                                 //TODO リトライ処理
                                 console.log("failed to upload");
@@ -257,6 +257,7 @@ function onRecordingAudioIsReady(event) {
 
 chrome.browserAction.onClicked.addListener(tab => {
     console.log("browserAction is clicked");
+    console.dir(tab);
 
     if (chrome.runtime.lastError && chrome.runtime.lastError.message.match(/cannot be scripted/)) {
         window.alert('It is not allowed to use Gyaon extension in this page.');
@@ -264,6 +265,7 @@ chrome.browserAction.onClicked.addListener(tab => {
         reloadExtenison();
     }
 
+    //ES2017だとuncludesが使えるらしいぞ
     if (tab.url.indexOf("https://scrapbox.io/") !== -1) {
         console.log("this site is scrapbox!");
         isScrapbox = true;
