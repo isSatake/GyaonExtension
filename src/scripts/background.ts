@@ -20,15 +20,6 @@ chrome.runtime.onInstalled.addListener(details => {
     document.body.appendChild(backGroundTextArea);
     //インストールしたらまずGyaonIDを設定してもらう
     chrome.runtime.openOptionsPage();
-    // chrome.storage.local.get("gyaonID", item =>{
-    //     if (item != undefined) {
-    //         //すでに設定されてる場合はスキップする
-    //         console.dir(item.gyaonID);
-    //         initialize();
-    //     } else {
-    //         chrome.runtime.openOptionsPage();
-    //     }
-    // });
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -104,7 +95,9 @@ function reNameSoundFile(id: String) {
                 : ${recognizedText}`);
             }
         })
-        .catch(console.error);
+        .catch(error => {
+            console.log(error);
+        });
     }
 
 let recorder: any;
@@ -126,23 +119,6 @@ navigator.mediaDevices.getUserMedia({audio: true})
             const downloadURL = URL.createObjectURL(new Blob(recordedChunks));
             console.log(downloadURL);
             //TODO async-await化
-            // thenChrome.storage.local.get('gyaonID')
-            //     .then(item => {
-            //         if (item != undefined) {
-            //             upload(item, new Blob(recordedChunks))
-            //                 .then(response => {
-            //                     console.dir(response)
-            //                 })
-            //                 .catch(error => {
-            //                     console.log(error)
-            //                 })
-            //         } else {
-            //             console.log("item is undefined")
-            //         }
-            //     })
-            //     .catch(error => {
-            //         console.log(error)
-            //     })
 
             //通常のコールバック関数
             chrome.storage.local.get("gyaonID", function (items) {
@@ -181,22 +157,7 @@ navigator.mediaDevices.getUserMedia({audio: true})
                     console.log("item is undefined")
                 }
             })
-
-            // downloadLink.href = downloadURL;
-            // downloadLink.download = 'acetest.wav';
-            // chrome.downloads.download({
-            //     url:downloadURL,
-            //     filename:'GyaonExtension.wav'
-            // }, error => {
-            //     console.log(error)
-            // });
-
         });
-        // recorder.addEventListener('stop', function () {
-        //     const downloadLink = document.getElementById('download') as HTMLAnchorElement;
-        //     downloadLink.href = URL.createObjectURL(new Blob(recordedChunks));
-        //     downloadLink.download = 'acetest.wav';
-        // });
     })
     .catch(error => {
         console.dir(error)
@@ -247,12 +208,6 @@ function stopRecording() {
         console.log("recorder is null");
         reloadExtenison();
     }
-}
-
-function onRecordingAudioIsReady(event) {
-    // const audioDOM = document.getElementById("audio") as HTMLAudioElement;
-    // audioDOM.src = URL.createObjectURL(event.data);
-    // audioDOM.play();
 }
 
 chrome.browserAction.onClicked.addListener(tab => {
