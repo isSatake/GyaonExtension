@@ -96,7 +96,7 @@ function reNameSoundFile(id: String) {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
     };
-    const body = JSON.stringify({value : recognizedText});
+    const body = JSON.stringify({value: recognizedText});
     fetch(url, {method, headers, body})
         .then(response => {
             console.dir(response);
@@ -125,7 +125,7 @@ navigator.mediaDevices.getUserMedia({audio: true})
             const downloadLink = document.getElementById('download') as HTMLAnchorElement;
             const downloadURL = URL.createObjectURL(new Blob(recordedChunks));
             console.log(downloadURL);
-            //TODO Promise & async-await化
+            //TODO async-await化
             // thenChrome.storage.local.get('gyaonID')
             //     .then(item => {
             //         if (item != undefined) {
@@ -163,7 +163,7 @@ navigator.mediaDevices.getUserMedia({audio: true})
                                 }
 
                                 if (recognizedText != undefined) {
-                                    console.log("renaming...")
+                                    console.log("renaming...");
                                     reNameSoundFile(response.data.object.key);
                                 } else {
                                     console.log("something went wrong")
@@ -201,10 +201,6 @@ navigator.mediaDevices.getUserMedia({audio: true})
     .catch(error => {
         console.dir(error)
     });
-
-async function getGyaonID() {
-    const gyaonID = await thenChrome.storage.local.get('gyaonID');
-}
 
 const recognition = new webkitSpeechRecognition();
 recognition.continuous = true;
