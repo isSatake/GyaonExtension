@@ -22,6 +22,10 @@ chrome.runtime.onInstalled.addListener(details => {
     chrome.runtime.openOptionsPage();
 });
 
+chrome.runtime.onStartup.addListener(() => {
+    //
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // if (request.message === "initExtension") {
     //     console.log("initExtension");
@@ -163,6 +167,17 @@ navigator.mediaDevices.getUserMedia({audio: true})
         console.dir(error)
     });
 
+function initRecorder() {
+    navigator.mediaDevices.getUserMedia({audio: true})
+        .then(stream => {
+            console.log("mediaDeveices is initialized!")
+        })
+        .catch(error => {
+            console.log(error)
+            reloadExtenison();
+        })
+}
+
 const recognition = new webkitSpeechRecognition();
 recognition.continuous = true;
 recognition.onend = function () {
@@ -179,7 +194,14 @@ recognition.onresult = function (event) {
 
 function startRecording() {
     if (recorder != null) {
-        recorder.start();
+        try {
+            recorder.start();
+        } catch (e) {
+            console.log(e);
+            //ここにMediaRecorderをリセット
+            initRecorder();
+        }
+
         console.log("startRecording");
         chrome.browserAction.setIcon({path: activeIcon});
         chrome.browserAction.setBadgeText({text: "REC"});

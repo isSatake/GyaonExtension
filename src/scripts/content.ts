@@ -27,7 +27,6 @@ function removePrompt () {
     }
 }
 
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.cmd === "pasteToScrapbox") {
         //音声認識が成功していた場合貼り付け文に認識結果を含める
