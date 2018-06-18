@@ -26,6 +26,10 @@ chrome.runtime.onStartup.addListener(() => {
     //
 });
 
+chrome.runtime.onUpdateAvailable.addListener(details => {
+    reloadExtenison();
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // if (request.message === "initExtension") {
     //     console.log("initExtension");
