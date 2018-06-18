@@ -79,6 +79,34 @@ function sendURLtoScrapbox(url, title) {
     })
 }
 
+function openPrompt() {
+    const queryInfo = {
+        active: true,
+        windowId: chrome.windows.WINDOW_ID_CURRENT
+    };
+
+    chrome.tabs.query(queryInfo, function (result) {
+        const currentTab = result.shift();
+        const sendData = {cmd: "openPrompt", text:recognizedText};
+        chrome.tabs.sendMessage(currentTab.id, sendData, function () {
+        });
+    })
+}
+
+function closePrompt() {
+    const queryInfo = {
+        active: true,
+        windowId: chrome.windows.WINDOW_ID_CURRENT
+    };
+
+    chrome.tabs.query(queryInfo, function (result) {
+        const currentTab = result.shift();
+        const sendData = {cmd: "closePrompt"};
+        chrome.tabs.sendMessage(currentTab.id, sendData, function () {
+        });
+    })
+}
+
 function reNameSoundFile(id: String) {
     const url = `https://gyaon.com/comment/${id}`;
     const method = "POST";
@@ -127,12 +155,15 @@ navigator.mediaDevices.getUserMedia({audio: true})
                     upload(gyaonID, new Blob(recordedChunks))
                         .then(response => {
                             console.dir(response);
-                            recordedChunks.length = 0
+                            recordedChunks.length = 0;
                             if (response.status === 200) {
                                 //アップロードに成功
                                 const uploadedURL = `${response.data.endpoint}/sound/${response.data.object.key}`;
                                 console.log(`uploadedURL : ${uploadedURL}`);
                                 pasteToClipBoard(uploadedURL);
+
+                                openPrompt();
+
                                 if (recognizedText != undefined) {
                                     console.log("renaming...");
                                     reNameSoundFile(response.data.object.key);

@@ -1,19 +1,59 @@
+const closeButton = chrome.runtime.getURL("/icons/close.png");
 
-function appendPrompt () {
+function appendPrompt (text: String) {
     let gyaonPrompt = document.querySelector(".gyaonDOM")  as HTMLDivElement;
 
     if (gyaonPrompt != null) {
 
     } else {
         gyaonPrompt = document.createElement('div');
+        gyaonPrompt.id = "gyaonFlame";
         gyaonPrompt.className = "gyaonDOM";
-        gyaonPrompt.style.zIndex = "2147483647";
-        gyaonPrompt.style.position = "relative";
-        gyaonPrompt.style.paddingLeft = "10px";
-        gyaonPrompt.style.paddingTop = "10px";
-        gyaonPrompt.style.fontSize = ".7em";
         document.body.appendChild(gyaonPrompt);
+
+        const TopMessage = document.createElement('h3');
+        TopMessage.id = "topMessage";
+        TopMessage.innerText = "Saved!";
+        gyaonPrompt.appendChild(TopMessage);
+
+        const savedMessage = document.createElement('p');
+        savedMessage.id = "savedMessage";
+        savedMessage.innerText = "Gyaonのリンクがコピーされました";
+        gyaonPrompt.appendChild(savedMessage);
+
+        const editContainer = document.createElement('div');
+        editContainer.id = "editContainer";
+        gyaonPrompt.appendChild(editContainer);
+
+        const fileNameTextArea = document.createElement('span');
+        fileNameTextArea.id = "fileNameTextArea";
+        fileNameTextArea.contentEditable = "true";
+        if (text != undefined) {
+            fileNameTextArea.innerText = text.toString();
+        }
+        editContainer.appendChild(fileNameTextArea);
+
+        const reNameButton = document.createElement('button');
+        reNameButton.id = "reNameButton";
+        reNameButton.innerText = "保存する";
+        reNameButton.addEventListener('click',function () {
+            renameFileName(fileNameTextArea.innerText);
+        });
+        editContainer.appendChild(reNameButton);
+
+        const closeButton = document.createElement('div');
+        closeButton.id = "closePromptButton";
+        closeButton.style.backgroundImage = `url(${closeButton})`;
+        closeButton.addEventListener('click', function () {
+            removePrompt();
+        });
+        editContainer.appendChild(closeButton);
+
     }
+}
+
+function renameFileName (text: String) {
+
 }
 
 function removePrompt () {
@@ -40,5 +80,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         console.log(pasteText);
         document.execCommand("insertText",false, pasteText);
+    } else if (message.cmd === "openPrompt") {
+        console.log("openPrompt");
+        appendPrompt(message.text)
+    } else if (message.cmd === "closePrompt") {
+        console.log("closePrompt");
     }
 });

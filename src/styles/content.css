@@ -1,0 +1,51 @@
+.gyaonDOM {
+    z-index: 2147483647;
+    position: fixed;
+}
+
+#gyaonFlame {
+    right: 10px;
+    top: 10px;
+    width: 20%;
+    height: 15%;
+    padding: 5px;
+    background-color: #EEE;
+}
+
+#topMessage {
+    vertical-align: middle;
+    text-align: center;
+    color: #333333;
+}
+
+#savedMessage {
+    vertical-align: middle;
+    text-align: center;
+    color: #333333;
+}
+
+#editContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+#fileNameTextArea {
+    flex: 4;
+    border-bottom: solid 1px #67c5ff;
+    overflow: hidden;
+    min-width: 0;
+}
+
+#reNameButton {
+    font-weight: bold;
+    font-size: 0.8em;
+    padding: 0.5em 2em;
+    flex: 1;
+    height: min-content;
+    align-self: center;
+
+    color: #67c5ff;
+    border: solid 2px #67c5ff;
+    border-radius: 3px;
+}
