@@ -7,7 +7,7 @@ window.onload = function () {
 
     //以前にGyaonIDが設定されていた場合、中身を当該IDにする
     chrome.storage.local.get("gyaonID", item =>{
-        if (item != undefined) {
+        if (item != undefined && item.toString() !== "undefined") {
             console.log(item.gyaonID);
             idForm.value = item.gyaonID;
         }

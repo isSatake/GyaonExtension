@@ -22,10 +22,21 @@ function removePrompt () {
     if (gyaonPrompt != null) {
         gyaonPrompt.remove();
         // notificate("removeNewType")
+        chrome.runtime.onMessage.addListener( (message, sender, sendResponse) => {
+
+        } );
     } else {
         console.log("gyaonPrompt is null")
     }
 }
+
+document.onkeydown = function (event) {
+    if (event.ctrlKey && event.key == "r") {
+        console.log("Ctrl + R key Down!");
+    } else if (event.ctrlKey && event.key == "t") {
+        console.log("Ctrl + T key Down!");
+    }
+};
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.cmd === "pasteToScrapbox") {
