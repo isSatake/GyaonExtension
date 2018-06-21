@@ -217,7 +217,8 @@ recognition.onresult = function (event) {
 };
 
 function tabRecord () {
-    chrome.tabCapture.capture({audio : true}, stream => {
+    chrome.tabCapture.capture({audio:true}, stream => {
+        
         tabRecorder = new MediaRecorder(stream);
         tabRecorder.start();
         console.log("startTabRecording");
@@ -230,24 +231,36 @@ function tabRecord () {
             recordedChunks.push(event.data);
             console.dir(recordedChunks);
 
-            const downloadURL = URL.createObjectURL(new Blob(recordedChunks));
-            console.log(downloadURL);
-
-            let fileName = "";
-
             chrome.tabs.query({active:true, currentWindow: true}, (tabs) => {
                 console.dir(tabs);
-                console.dir(tabs[0].title);
-                fileName = tabs[0].title;
-            });
+                const fileName = tabs[0].title;
 
-            chrome.downloads.download({
-                url:downloadURL,
-                filename:`fileName.wav`
-            }, error => {
-                console.log(error)
+                chrome.storage.local.get("gyaonID", function (items) {
+                    if (items != undefined) {
+                        const gyaonID = items.gyaonID;
+                        upload(gyaonID, new Blob(recordedChunks))
+                            .then(response => {
+                                console.dir(response);
+                                recordedChunks.length = 0;
+                                if (response.status === 200) {
+                                    //アップロードに成功
+                                    const uploadedURL = `${response.data.endpoint}/sound/${response.data.object.key}`;
+                                    console.log(`uploadedURL : ${uploadedURL}`);
+                                    pasteToClipBoard(uploadedURL);
+                                } else {
+                                    //TODO リトライ処理
+                                    console.log("failed to upload");
+                                }
+                            })
+                            .catch(error => {
+                                //TODO リトライ処理
+                                console.log(error)
+                            })
+                    } else {
+                        console.log("item is undefined")
+                    }
+                })
             });
-            recordedChunks.length = 0;
         });
     })
 }
