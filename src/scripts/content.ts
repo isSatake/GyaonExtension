@@ -30,14 +30,6 @@ function removePrompt () {
     }
 }
 
-document.onkeydown = function (event) {
-    if (event.ctrlKey && event.key == "r") {
-        console.log("Ctrl + R key Down!");
-    } else if (event.ctrlKey && event.key == "t") {
-        console.log("Ctrl + T key Down!");
-    }
-};
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.cmd === "pasteToScrapbox") {
         //音声認識が成功していた場合貼り付け文に認識結果を含める

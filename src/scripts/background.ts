@@ -41,6 +41,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
+chrome.commands.onCommand.addListener(command => {
+    if (command == "mic_rec") {
+        console.log("mic_rec");
+        if (isRecording != true) {
+            startRecording();
+        } else {
+            stopRecording();
+        }
+        isRecording = !isRecording;
+    } else if (command == "tab_rec") {
+        if (isRecording != true) {
+            startTabRecording();
+        } else {
+            stopTabRecording();
+        }
+        isRecording = !isRecording;
+    }
+});
+
 //通知用関数
 function notificate(message) {
     const notifOption = {
@@ -106,9 +125,10 @@ function reNameSoundFile(id: String) {
         .catch(error => {
             console.log(error);
         });
-    }
+}
 
 let recorder: any;
+let tabRecorder:any;
 let isRecording: boolean = false;
 let isScrapbox: boolean = false;
 let isRecognizing: boolean = false;
@@ -195,6 +215,61 @@ recognition.onresult = function (event) {
     console.log(item.transcript);
     recognizedText = item.transcript;
 };
+
+function tabRecord () {
+    chrome.tabCapture.capture({audio : true}, stream => {
+        tabRecorder = new MediaRecorder(stream);
+        tabRecorder.start();
+        console.log("startTabRecording");
+        chrome.browserAction.setIcon({path: activeIcon});
+        chrome.browserAction.setBadgeText({text: "REC"});
+        chrome.browserAction.setBadgeBackgroundColor({color: "#3c4dc0"});
+
+        tabRecorder.addEventListener('dataavailable', function (event) {
+            stream.getAudioTracks()[0].stop();
+            recordedChunks.push(event.data);
+            console.dir(recordedChunks);
+
+            const downloadURL = URL.createObjectURL(new Blob(recordedChunks));
+            console.log(downloadURL);
+
+            let fileName = "";
+
+            chrome.tabs.query({active:true, currentWindow: true}, (tabs) => {
+                console.dir(tabs);
+                console.dir(tabs[0].title);
+                fileName = tabs[0].title;
+            });
+
+            chrome.downloads.download({
+                url:downloadURL,
+                filename:`fileName.wav`
+            }, error => {
+                console.log(error)
+            });
+            recordedChunks.length = 0;
+        });
+    })
+}
+
+function startTabRecording(){
+    try {
+        tabRecord ();
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+function stopTabRecording() {
+    try {
+        tabRecorder.stop();
+        console.log("stopTabRecording");
+        chrome.browserAction.setIcon({path: deactiveIcon});
+        chrome.browserAction.setBadgeText({text: ""});
+    } catch (e) {
+        console.log(e)
+    }
+}
 
 function startRecording() {
     if (recorder != null) {
