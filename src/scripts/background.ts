@@ -1,5 +1,4 @@
 import {upload} from "gyaonup";
-import thenChrome from "then-chrome";
 
 declare var MediaRecorder: any;
 declare var webkitSpeechRecognition: any;
@@ -218,8 +217,9 @@ recognition.onresult = function (event) {
 
 function tabRecord () {
     chrome.tabCapture.capture({audio:true}, stream => {
-        
-        tabRecorder = new MediaRecorder(stream);
+        // const audioSource = new AudioContext().createMediaStreamSource(stream);
+        const audioSource = stream.getAudioTracks();
+        tabRecorder = new MediaRecorder(audioSource);
         tabRecorder.start();
         console.log("startTabRecording");
         chrome.browserAction.setIcon({path: activeIcon});
@@ -227,6 +227,7 @@ function tabRecord () {
         chrome.browserAction.setBadgeBackgroundColor({color: "#3c4dc0"});
 
         tabRecorder.addEventListener('dataavailable', function (event) {
+            //tabCaptureを終了する
             stream.getAudioTracks()[0].stop();
             recordedChunks.push(event.data);
             console.dir(recordedChunks);

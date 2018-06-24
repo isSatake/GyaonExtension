@@ -28,8 +28,8 @@
     "@types/es6-promise": "^3.3.0",
     "D": "^1.0.0",
     "axios": "^0.18.0",
-    "gyaonup": "^0.0.0",
-    "then-chrome": "^1.0.7"
+    "chrome-promise": "^3.0.2",
+    "gyaonup": "^0.0.0"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.68",

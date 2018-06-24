@@ -1,5 +1,5 @@
 
-window.onload = function () {
+window.onload = async function () {
     console.log("this is option page");
     const idForm = document.getElementById("idForm") as HTMLTextAreaElement;
     const idButton = document.getElementById("idButton");
