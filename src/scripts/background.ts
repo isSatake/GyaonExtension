@@ -1,5 +1,5 @@
 import {upload} from "gyaonup";
-import thenChrome from "then-chrome";
+import chromep from 'chrome-promise';
 
 declare var MediaRecorder: any;
 declare var webkitSpeechRecognition: any;
@@ -10,7 +10,7 @@ const deactiveIcon = chrome.runtime.getURL("/icons/deactive.png");
 const bigIcon = chrome.runtime.getURL("/icons/bigicon.png");
 
 //インストール時に実行する
-chrome.runtime.onInstalled.addListener(details => {
+chrome.runtime.onInstalled.addListener(async (details) => {
     chrome.browserAction.disable();
     chrome.browserAction.setIcon({path: disabelIcon});
     console.log(`Install reason : ${details.reason}, previous version : ${details.previousVersion}`);
@@ -26,14 +26,11 @@ chrome.runtime.onStartup.addListener(() => {
     //
 });
 
-chrome.runtime.onUpdateAvailable.addListener(details => {
+chrome.runtime.onUpdateAvailable.addListener(async (details) => {
     reloadExtenison();
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // if (request.message === "initExtension") {
-    //     console.log("initExtension");
-    // } else
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.message === "notification") {
         const text = request.text;
         console.log(text);
@@ -42,7 +39,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 //通知用関数
-function notificate(message) {
+async function notificate(message) {
     const notifOption = {
         type: "basic",
         iconUrl: bigIcon,
@@ -50,44 +47,41 @@ function notificate(message) {
         message: `${message}`
     };
 
-    chrome.notifications.getPermissionLevel(function (level) {
-        if (level === "granted") {
-            console.log("granted");
-            chrome.notifications.create(notifOption);
-        } else if (level === "denied") {
-            console.log("User has elected not to show notifications from the app or extension.")
-        }
-    })
+    try {
+        await chromep.notifications.getPermissionLevel();
+        chrome.notifications.create(notifOption);
+    } catch (error) {
+        console.log(error);
+        console.log("User has elected not to show notifications from the app or extension.")
+    }
 }
 
-function reloadExtenison() {
+async function reloadExtenison() {
     console.log(`Gyaon Extension will be reload`);
     chrome.runtime.reload();
 }
 
-function pasteToClipBoard(text) {
+async function pasteToClipBoard(text) {
     const textArea = document.getElementById("textArea") as HTMLTextAreaElement;
     textArea.value = text;
     textArea.select();
     document.execCommand("copy");
 }
 
-function sendURLtoScrapbox(url, title) {
+async function sendURLtoScrapbox(url, title) {
     const queryInfo = {
         active: true,
         windowId: chrome.windows.WINDOW_ID_CURRENT
     };
 
-    chrome.tabs.query(queryInfo, function (result) {
-        const currentTab = result.shift();
-        const sendData = {cmd: "pasteToScrapbox", url: url, title: title};
-
-        chrome.tabs.sendMessage(currentTab.id, sendData, function () {
-        });
-    })
+    const tabs = await chromep.tabs.query(queryInfo);
+    const currentTab = tabs.shift();
+    const sendData = {cmd: "pasteToScrapbox", url: url, title: title};
+    chrome.tabs.sendMessage(currentTab.id, sendData, async () => {
+    });
 }
 
-function reNameSoundFile(id: String) {
+async function reNameSoundFile(id: String) {
     const url = `https://gyaon.com/comment/${id}`;
     const method = "POST";
     const headers = {
@@ -95,91 +89,89 @@ function reNameSoundFile(id: String) {
         'Content-Type': 'application/json'
     };
     const body = JSON.stringify({value: recognizedText});
-    fetch(url, {method, headers, body})
-        .then(response => {
-            console.dir(response);
-            if (response.status == 200) {
-                notificate(`音声をアップロードしました。
-                : ${recognizedText}`);
-            }
-        })
-        .catch(error => {
-            console.log(error);
-        });
+
+    try {
+        const request = await fetch(url, {method, headers, body});
+        console.log(request);
+        if (request.status == 200) {
+            notificate(`音声をアップロードしました。: ${recognizedText}`);
+        }
+    } catch (error) {
+        console.log(error);
     }
+}
 
 let recorder: any;
 let isRecording: boolean = false;
-let isScrapbox: boolean = false;
 let isRecognizing: boolean = false;
 let recognizedText: String;
-
-
 const recordedChunks = [];
+
+
+
 navigator.mediaDevices.getUserMedia({audio: true})
-    .then(stream => {
+    .then(async (stream) => {
         recorder = new MediaRecorder(stream);
-        recorder.addEventListener('dataavailable', function (event) {
+        recorder.addEventListener('dataavailable', async (event) => {
             recordedChunks.push(event.data);
             console.dir(recordedChunks);
 
-            const downloadLink = document.getElementById('download') as HTMLAnchorElement;
-            const downloadURL = URL.createObjectURL(new Blob(recordedChunks));
-            console.log(downloadURL);
-            //TODO async-await化
+            const localGyaonID = await chromep.storage.local.get("gyaonID");
+            const gyaonID : String = localGyaonID.gyaonID;
+            //GyaonIDが設定されているかチェックする
+            if (gyaonID === "undefined") {
+                console.log("gyaonID is not set!");
+                chrome.runtime.openOptionsPage();
+            } else {
+                try {
+                   const request = await upload(gyaonID.toString(), new Blob(recordedChunks));
+                   console.dir(request);
+                    if (request.status === 200) {
+                        recordedChunks.length = 0;
+                        const uploadedURL = `${request.data.endpoint}/sound/${request.data.object.key}`;
+                        console.log(`uploadedURL : ${uploadedURL}`);
+                        pasteToClipBoard(uploadedURL);
 
-            //通常のコールバック関数
-            chrome.storage.local.get("gyaonID", function (items) {
-                if (items != undefined) {
-                    const gyaonID = items.gyaonID;
-                    upload(gyaonID, new Blob(recordedChunks))
-                        .then(response => {
-                            console.dir(response);
-                            recordedChunks.length = 0
-                            if (response.status === 200) {
-                                //アップロードに成功
-                                const uploadedURL = `${response.data.endpoint}/sound/${response.data.object.key}`;
-                                console.log(`uploadedURL : ${uploadedURL}`);
-                                pasteToClipBoard(uploadedURL);
-                                if (recognizedText != undefined) {
-                                    console.log("renaming...");
-                                    reNameSoundFile(response.data.object.key);
-                                } else {
-                                    console.log("something went wrong")
-                                }
-                                //Scrapboxの場合はオーディオ記法で貼り付ける
-                                if (isScrapbox) {
-                                    sendURLtoScrapbox(uploadedURL, recognizedText);
-                                }
+                        if (recognizedText != undefined) {
+                            console.log("renaming...");
+                            reNameSoundFile(request.data.object.key);
+                        } else {
+                            console.log("認識できませんでした。")
+                        }
 
-                            } else {
-                                //TODO リトライ処理
-                                console.log("failed to upload");
-                            }
-                        })
-                        .catch(error => {
-                            //TODO リトライ処理
-                            console.log(error)
-                        })
-                } else {
-                    console.log("item is undefined")
+                        const queryInfo = {
+                            active: true,
+                            windowId: chrome.windows.WINDOW_ID_CURRENT
+                        };
+                        const tabs = await chromep.tabs.query(queryInfo);
+                        const activeTab = tabs.shift();
+                        if (activeTab.url.includes("https://scrapbox.io")) {
+                            console.log("Its Scrapbox!");
+                            const pasteText =  `[${recognizedText} ${uploadedURL}]`;
+                            await chromep.tabs.executeScript(activeTab.id,{code: `document.execCommand("insertText",false, "${pasteText}");`});
+                        } else {
+                            console.log("Its not Scrapbox!");
+                        }
+                    }
+
+                } catch (error) {
+                    console.log(error);
                 }
-            })
+            }
         });
     })
     .catch(error => {
         console.dir(error)
     });
 
-function initRecorder() {
-    navigator.mediaDevices.getUserMedia({audio: true})
-        .then(stream => {
-            console.log("mediaDeveices is initialized!")
-        })
-        .catch(error => {
-            console.log(error)
-            reloadExtenison();
-        })
+async function initRecorder() {
+    try {
+        await navigator.mediaDevices.getUserMedia({audio: true});
+        console.log("mediaDeveices is initialized!");
+    } catch (error) {
+        console.log(error);
+        reloadExtenison();
+    }
 }
 
 const recognition = new webkitSpeechRecognition();
@@ -196,7 +188,7 @@ recognition.onresult = function (event) {
     recognizedText = item.transcript;
 };
 
-function startRecording() {
+async function startRecording() {
     if (recorder != null) {
         try {
             recorder.start();
@@ -220,7 +212,7 @@ function startRecording() {
     }
 }
 
-function stopRecording() {
+async function stopRecording() {
     if (recorder != null) {
         recorder.stop();
         console.log("stopRecording");
@@ -244,12 +236,6 @@ chrome.browserAction.onClicked.addListener(tab => {
         window.alert('It is not allowed to use Gyaon extension in this page.');
         chrome.browserAction.disable();
         reloadExtenison();
-    }
-
-    //ES2017だとuncludesが使えるらしいぞ
-    if (tab.url.indexOf("https://scrapbox.io/") !== -1) {
-        console.log("this site is scrapbox!");
-        isScrapbox = true;
     }
 
     if (isRecording != true) {
