@@ -1,6 +1,5 @@
-import chromep from 'chrome-promise';
 
-function appendPrompt () {
+async function appendPrompt () {
     let gyaonPrompt = document.querySelector(".gyaonDOM")  as HTMLDivElement;
 
     if (gyaonPrompt != null) {
@@ -17,7 +16,7 @@ function appendPrompt () {
     }
 }
 
-function removePrompt () {
+async function removePrompt () {
     const gyaonPrompt = document.querySelector(".gyaonDOM");
 
     if (gyaonPrompt != null) {
@@ -28,17 +27,6 @@ function removePrompt () {
     }
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.cmd === "pasteToScrapbox") {
-        //音声認識が成功していた場合貼り付け文に認識結果を含める
-        let pasteText = `[  ${message.url}]`;
-        const title = message.title;
-        if (title != undefined && title !== "undefined") {
-            pasteText = `[${title} ${message.url}]`;
-        } else {
-            console.log("title is null")
-        }
-        console.log(pasteText);
-        document.execCommand("insertText",false, pasteText);
-    }
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+
 });
