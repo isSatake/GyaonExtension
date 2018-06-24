@@ -1,5 +1,5 @@
 import {upload} from "gyaonup";
-import thenChrome from "then-chrome";
+import chromep from 'chrome-promise';
 
 declare var MediaRecorder: any;
 declare var webkitSpeechRecognition: any;

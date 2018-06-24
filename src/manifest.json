@@ -13,11 +13,8 @@
     "storage",
     "tabCapture",
     "downloads",
-    "clipboardWrite",
     "contextMenus",
     "notifications",
-    "clipboardRead",
-    "clipboardWrite",
     "<all_urls>"
   ],
   "content_scripts": [

@@ -1,3 +1,4 @@
+import chromep from 'chrome-promise';
 
 function appendPrompt () {
     let gyaonPrompt = document.querySelector(".gyaonDOM")  as HTMLDivElement;

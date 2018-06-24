@@ -261,6 +261,10 @@ cached-path-relative@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/cached-path-relative/-/cached-path-relative-1.0.1.tgz#d09c4b52800aa4c078e2dd81a869aac90d2e54e7"
 
+chrome-promise@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/chrome-promise/-/chrome-promise-3.0.2.tgz#31e273e32ef10eb86a8cb4d61c7a843362d29463"
+
 cipher-base@^1.0.0, cipher-base@^1.0.1, cipher-base@^1.0.3:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/cipher-base/-/cipher-base-1.0.4.tgz#8760e4ecc272f4c363532f926d874aae2c1397de"
