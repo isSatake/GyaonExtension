@@ -1,5 +1,6 @@
 import {upload} from "gyaonup";
 import chromep from 'chrome-promise';
+import Tab = chrome.tabs.Tab;
 
 declare var MediaRecorder: any;
 declare var webkitSpeechRecognition: any;
@@ -87,33 +88,33 @@ async function pasteToClipBoard(text) {
     document.execCommand("copy");
 }
 
-async function sendURLtoScrapbox(url, title) {
-    const queryInfo = {
-        active: true,
-        windowId: chrome.windows.WINDOW_ID_CURRENT
-    };
-
-    const tabs = await chromep.tabs.query(queryInfo);
-    const currentTab = tabs.shift();
-    const sendData = {cmd: "pasteToScrapbox", url: url, title: title};
-    chrome.tabs.sendMessage(currentTab.id, sendData, async () => {
+async function sendURLtoScrapbox(url, title): Promise<Boolean> {
+    return new Promise<Boolean>(async (resolve, reject) => {
+        const activeTab = await getActiveTab();
+        if (activeTab.url.includes("https://scrapbox.io")) {
+            const pasteText = `[${title} ${url}]`;
+            await chromep.tabs.executeScript(activeTab.id, {code: `document.execCommand("insertText",false, "${pasteText}");`});
+            resolve(true);
+        } else {
+            resolve(false)
+        }
     });
 }
 
-async function reNameSoundFile(id: String) {
+async function reNameSoundFile(id: String, fileName: String) {
     const url = `https://gyaon.com/comment/${id}`;
     const method = "POST";
     const headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
     };
-    const body = JSON.stringify({value: recognizedText});
+    const body = JSON.stringify({value: fileName});
 
     try {
         const request = await fetch(url, {method, headers, body});
         console.log(request);
         if (request.status == 200) {
-            notificate(`音声をアップロードしました。: ${recognizedText}`);
+            notificate(`音声をアップロードしました。: ${fileName}`);
         }
     } catch (error) {
         console.log(error);
@@ -121,7 +122,7 @@ async function reNameSoundFile(id: String) {
 }
 
 let recorder: any;
-let tabRecorder:any;
+let tabRecorder: any;
 let isRecording: boolean = false;
 let isRecognizing: boolean = false;
 let recognizedText: String;
@@ -135,42 +136,29 @@ navigator.mediaDevices.getUserMedia({audio: true})
             recordedChunks.push(event.data);
             console.dir(recordedChunks);
 
-            const localGyaonID = await chromep.storage.local.get("gyaonID");
-            const gyaonID : String = localGyaonID.gyaonID;
             //GyaonIDが設定されているかチェックする
-            if (gyaonID === "undefined") {
-                console.log("gyaonID is not set!");
-                chrome.runtime.openOptionsPage();
-            } else {
+            if (await getGyaonID()) {
                 try {
-                   const request = await upload(gyaonID.toString(), new Blob(recordedChunks));
-                   console.dir(request);
+                    const request = await upload(getGyaonID().toString(), new Blob(recordedChunks));
+                    console.dir(request);
                     if (request.status === 200) {
                         recordedChunks.length = 0;
                         const uploadedURL = `${request.data.endpoint}/sound/${request.data.object.key}`;
                         console.log(`uploadedURL : ${uploadedURL}`);
-                        pasteToClipBoard(uploadedURL);
+                        await pasteToClipBoard(uploadedURL);
 
                         if (recognizedText != undefined) {
                             console.log("renaming...");
-                            reNameSoundFile(request.data.object.key);
+                            reNameSoundFile(request.data.object.key, recognizedText);
+                            sendURLtoScrapbox(uploadedURL, recognizedText);
                         } else {
-                            console.log("認識できませんでした。")
+                            console.log("認識できませんでした。");
+                            const activeTab = await getActiveTab();
+                            reNameSoundFile(request.data.object.key, activeTab.title);
+                            sendURLtoScrapbox(uploadedURL, activeTab.title);
                         }
-
-                        const queryInfo = {
-                            active: true,
-                            windowId: chrome.windows.WINDOW_ID_CURRENT
-                        };
-                        const tabs = await chromep.tabs.query(queryInfo);
-                        const activeTab = tabs.shift();
-                        if (activeTab.url.includes("https://scrapbox.io")) {
-                            console.log("Its Scrapbox!");
-                            const pasteText =  `[${recognizedText} ${uploadedURL}]`;
-                            await chromep.tabs.executeScript(activeTab.id,{code: `document.execCommand("insertText",false, "${pasteText}");`});
-                        } else {
-                            console.log("Its not Scrapbox!");
-                        }
+                    } else {
+                        console.log("failed to upload");
                     }
 
                 } catch (error) {
@@ -207,60 +195,78 @@ recognition.onresult = function (event) {
     recognizedText = item.transcript;
 };
 
-function tabRecord () {
-    chrome.tabCapture.capture({audio:true}, stream => {
-        // const audioSource = new AudioContext().createMediaStreamSource(stream);
-        const audioSource = stream.getAudioTracks();
-        tabRecorder = new MediaRecorder(audioSource);
+async function tabRecord() {
+    try {
+        const tabStream = await chromep.tabCapture.capture({audio: true});
+        tabRecorder = new MediaRecorder(tabStream);
         tabRecorder.start();
+
         console.log("startTabRecording");
         chrome.browserAction.setIcon({path: activeIcon});
         chrome.browserAction.setBadgeText({text: "REC"});
         chrome.browserAction.setBadgeBackgroundColor({color: "#3c4dc0"});
 
-        tabRecorder.addEventListener('dataavailable', function (event) {
-            //tabCaptureを終了する
-            stream.getAudioTracks()[0].stop();
+        tabRecorder.addEventListener('dataavailable', async (event) => {
+            tabStream.getAudioTracks()[0].stop();
             recordedChunks.push(event.data);
             console.dir(recordedChunks);
+            if (await getGyaonID()) {
+                const request = await upload(getGyaonID().toString(), new Blob(recordedChunks));
+                if (request.status === 200) {
+                    recordedChunks.length = 0;
+                    const uploadedURL = `${request.data.endpoint}/sound/${request.data.object.key}`;
+                    console.log(`uploadedURL : ${uploadedURL}`);
+                    const capturedTab = await chromep.tabCapture.getCapturedTabs();
+                    const capTab = capturedTab.shift().tabId;
+                    const getTab = await chromep.tabs.get(capTab);
+                    await reNameSoundFile(request.data.object.key, getTab.title);
+                    await pasteToClipBoard(uploadedURL);
+                    await sendURLtoScrapbox(uploadedURL, getTab.title);
+                } else {
+                    console.log("failed to upload");
+                }
+            }
+        })
 
-            chrome.tabs.query({active:true, currentWindow: true}, (tabs) => {
-                console.dir(tabs);
-                const fileName = tabs[0].title;
+    } catch (error) {
+        console.log(error);
+    }
+}
 
-                chrome.storage.local.get("gyaonID", function (items) {
-                    if (items != undefined) {
-                        const gyaonID = items.gyaonID;
-                        upload(gyaonID, new Blob(recordedChunks))
-                            .then(response => {
-                                console.dir(response);
-                                recordedChunks.length = 0;
-                                if (response.status === 200) {
-                                    //アップロードに成功
-                                    const uploadedURL = `${response.data.endpoint}/sound/${response.data.object.key}`;
-                                    console.log(`uploadedURL : ${uploadedURL}`);
-                                    pasteToClipBoard(uploadedURL);
-                                } else {
-                                    //TODO リトライ処理
-                                    console.log("failed to upload");
-                                }
-                            })
-                            .catch(error => {
-                                //TODO リトライ処理
-                                console.log(error)
-                            })
-                    } else {
-                        console.log("item is undefined")
-                    }
-                })
-            });
-        });
+//アクティブなタブを取ってくる関数
+async function getActiveTab(): Promise<Tab> {
+    return new Promise<Tab>(async (resolve, reject) => {
+        try {
+            const tabs = await chromep.tabs.query({active: true, currentWindow: true});
+            resolve(tabs.shift() as Tab);
+        } catch (error) {
+            reject(error);
+        }
     })
 }
 
-function startTabRecording(){
+//gyaonIDが設定されているか確認する関数
+async function getGyaonID(): Promise<String> {
+    return new Promise<String>(async (resolve, reject) => {
+        try {
+            const localGyaonID = await chromep.storage.local.get("gyaonID");
+            const gyaonID: String = localGyaonID.gyaonID;
+            if (gyaonID === "undefined") {
+                console.log("gyaonID is not set!");
+                chrome.runtime.openOptionsPage();
+                reject("error");
+            } else {
+                resolve(gyaonID);
+            }
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+function startTabRecording() {
     try {
-        tabRecord ();
+        tabRecord();
     } catch (e) {
         console.log(e);
     }
