@@ -3,9 +3,9 @@
     "module": "commonjs",
     "target": "es5",
     "sourceMap": true,
+    "allowJs": true,
     "outDir": "dist/scripts",
     "jsx": "react",
-    "allowJs": true,
     "lib": [
       "es2017",
       "es2016",

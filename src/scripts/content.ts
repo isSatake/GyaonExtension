@@ -22,6 +22,9 @@ async function removePrompt () {
     if (gyaonPrompt != null) {
         gyaonPrompt.remove();
         // notificate("removeNewType")
+        chrome.runtime.onMessage.addListener( (message, sender, sendResponse) => {
+
+        } );
     } else {
         console.log("gyaonPrompt is null")
     }

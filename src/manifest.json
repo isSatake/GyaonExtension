@@ -1,8 +1,8 @@
 {
   "name": "GyaonExtension",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Chrome extension for gyaon.com",
-  "icons" : {
+  "icons": {
     "128": "icons/bigicon.png"
   },
   "browser_action": {
@@ -19,11 +19,13 @@
   ],
   "content_scripts": [
     {
-      "matches" : [ "<all_urls>"],
+      "matches": [
+        "<all_urls>"
+      ],
       "js": [
         "scripts/content.js"
       ],
-      "run_at" : "document_idle"
+      "run_at": "document_idle"
     }
   ],
   "background": {
@@ -34,6 +36,29 @@
   "options_ui": {
     "page": "pages/option.html",
     "open_in_tab": true
+  },
+  "commands": {
+    "mic_rec": {
+      "suggested_key": {
+        "default": "Ctrl+R",
+        "mac": "MacCtrl+R"
+      },
+      "description": "Toggle Mic Recording"
+    },
+    "tab_rec":{
+      "suggested_key": {
+        "default": "Ctrl+T",
+        "mac": "MacCtrl+T"
+      },
+      "description": "Toggle tab Recording"
+    },
+    "stop_rec": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+X",
+        "mac": "MacCtrl+X"
+      },
+      "description": "Stop Capture"
+    }
   },
   "web_accessible_resources": [
     "https://gyaon.com/*",
