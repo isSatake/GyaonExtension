@@ -198,6 +198,10 @@ recognition.onresult = function (event) {
 async function tabRecord() {
     try {
         const tabStream = await chromep.tabCapture.capture({audio: true});
+        const audioDOM = document.getElementById("audio") as HTMLAudioElement;
+        audioDOM.src = URL.createObjectURL(tabStream);
+        audioDOM.play();
+
         tabRecorder = new MediaRecorder(tabStream);
         tabRecorder.start();
 
@@ -208,6 +212,8 @@ async function tabRecord() {
 
         tabRecorder.addEventListener('dataavailable', async (event) => {
             tabStream.getAudioTracks()[0].stop();
+            audioDOM.pause();
+            audioDOM.src = "";
             recordedChunks.push(event.data);
             console.dir(recordedChunks);
             if (await getGyaonID()) {

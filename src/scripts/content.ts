@@ -11,7 +11,6 @@ async function appendPrompt () {
         gyaonPrompt.style.position = "relative";
         gyaonPrompt.style.paddingLeft = "10px";
         gyaonPrompt.style.paddingTop = "10px";
-        gyaonPrompt.style.fontSize = ".7em";
         document.body.appendChild(gyaonPrompt);
     }
 }
