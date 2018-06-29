@@ -1,6 +1,9 @@
 import {upload} from "gyaonup";
 import chromep from 'chrome-promise';
 import getGyaonID from './libs/getGyaonID';
+import notifiCate from './libs/notifiCate';
+import reloadExtenison from './libs/reloadExtension';
+import pasteToClipBoard from './libs/pasteToClipBoard';
 import Tab = chrome.tabs.Tab;
 
 declare var MediaRecorder: any;
@@ -36,7 +39,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.message === "notification") {
         const text = request.text;
         console.log(text);
-        notificate(text);
+        await notifiCate(text).catch(() => {console.log(text)});
     }
 });
 
@@ -58,36 +61,6 @@ chrome.commands.onCommand.addListener(command => {
         isRecording = !isRecording;
     }
 });
-
-//通知用関数
-async function notificate(message) {
-    const notifOption = {
-        type: "basic",
-        iconUrl: bigIcon,
-        title: "GyaonExtension",
-        message: `${message}`
-    };
-
-    try {
-        await chromep.notifications.getPermissionLevel();
-        chrome.notifications.create(notifOption);
-    } catch (error) {
-        console.log(error);
-        console.log("User has elected not to show notifications from the app or extension.")
-    }
-}
-
-async function reloadExtenison() {
-    console.log(`Gyaon Extension will be reload`);
-    chrome.runtime.reload();
-}
-
-async function pasteToClipBoard(text) {
-    const textArea = document.getElementById("textArea") as HTMLTextAreaElement;
-    textArea.value = text;
-    textArea.select();
-    document.execCommand("copy");
-}
 
 async function sendURLtoScrapbox(url, title): Promise<Boolean> {
     return new Promise<Boolean>(async (resolve, reject) => {
@@ -115,7 +88,8 @@ async function reNameSoundFile(id: String, fileName: String) {
         const request = await fetch(url, {method, headers, body});
         console.log(request);
         if (request.status == 200) {
-            notificate(`音声をアップロードしました。: ${fileName}`);
+            const message = `音声をアップロードしました。: ${fileName}`;
+            await notifiCate(message).catch(() => {console.log(message);})
         }
     } catch (error) {
         console.log(error);

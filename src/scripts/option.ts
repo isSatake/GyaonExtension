@@ -7,15 +7,6 @@ window.onload = async function () {
     const idButton = document.getElementById("idButton");
     const deactiveIcon = chrome.runtime.getURL("/icons/deactive.png");
 
-    //以前にGyaonIDが設定されていた場合、中身を当該IDにする
-    // const localGyaonID = await chromep.storage.local.get("gyaonID");
-    //
-    // idForm.value = localGyaonID.gyaonID;
-    // if (idForm.value === "undefined") {
-    //     idForm.value = null
-    // } else {
-    //     console.dir(`GyaonID : ${localGyaonID.gyaonID}`);
-    // }
     try {
         const localGyaonID = await getGyaonID();
         console.log(localGyaonID);
