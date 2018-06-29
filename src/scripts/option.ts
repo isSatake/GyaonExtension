@@ -1,4 +1,5 @@
 import chromep from 'chrome-promise';
+import getGyaonID from './libs/getGyaonID'
 
 window.onload = async function () {
     console.log("this is option page");
@@ -7,13 +8,22 @@ window.onload = async function () {
     const deactiveIcon = chrome.runtime.getURL("/icons/deactive.png");
 
     //以前にGyaonIDが設定されていた場合、中身を当該IDにする
-    const localGyaonID = await chromep.storage.local.get("gyaonID");
-    idForm.value = localGyaonID.gyaonID;
-    if (idForm.value === "undefined") {
-        idForm.value = null
-    } else {
-        console.dir(`GyaonID : ${localGyaonID.gyaonID}`);
+    // const localGyaonID = await chromep.storage.local.get("gyaonID");
+    //
+    // idForm.value = localGyaonID.gyaonID;
+    // if (idForm.value === "undefined") {
+    //     idForm.value = null
+    // } else {
+    //     console.dir(`GyaonID : ${localGyaonID.gyaonID}`);
+    // }
+    try {
+        const localGyaonID = await getGyaonID();
+        console.log(localGyaonID);
+        idForm.value = localGyaonID.toString();
+    } catch (e) {
+        console.log(e)
     }
+
 
     //登録ボタンを押すと入力された値をGyaonIDとして登録する
     idButton.addEventListener('click', function (event) {
