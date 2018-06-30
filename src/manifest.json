@@ -1,6 +1,6 @@
 {
   "name": "GyaonExtension",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Chrome extension for gyaon.com",
   "icons": {
     "128": "icons/bigicon.png"
