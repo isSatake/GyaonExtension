@@ -4,7 +4,9 @@ import getGyaonID from './libs/getGyaonID';
 import notifiCate from './libs/notifiCate';
 import reloadExtenison from './libs/reloadExtension';
 import pasteToClipBoard from './libs/pasteToClipBoard';
-import Tab = chrome.tabs.Tab;
+import reNameSoundFile from './libs/reNameSoundFile';
+import getActiveTab from './libs/getActiveTab';
+import sendURLtoScrapbox from './libs/sendURLtoScrapbox';
 
 declare var MediaRecorder: any;
 declare var webkitSpeechRecognition: any;
@@ -62,40 +64,6 @@ chrome.commands.onCommand.addListener(command => {
     }
 });
 
-async function sendURLtoScrapbox(url, title): Promise<Boolean> {
-    return new Promise<Boolean>(async (resolve, reject) => {
-        const activeTab = await getActiveTab();
-        if (activeTab.url.includes("https://scrapbox.io")) {
-            const pasteText = `[${title} ${url}]`;
-            await chromep.tabs.executeScript(activeTab.id, {code: `document.execCommand("insertText",false, "${pasteText}");`});
-            resolve(true);
-        } else {
-            resolve(false)
-        }
-    });
-}
-
-async function reNameSoundFile(id: String, fileName: String) {
-    const url = `https://gyaon.com/comment/${id}`;
-    const method = "POST";
-    const headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-    };
-    const body = JSON.stringify({value: fileName});
-
-    try {
-        const request = await fetch(url, {method, headers, body});
-        console.log(request);
-        if (request.status == 200) {
-            const message = `音声をアップロードしました。: ${fileName}`;
-            await notifiCate(message).catch(() => {console.log(message);})
-        }
-    } catch (error) {
-        console.log(error);
-    }
-}
-
 let recorder: any;
 let tabRecorder: any;
 let isRecording: boolean = false;
@@ -126,12 +94,12 @@ navigator.mediaDevices.getUserMedia({audio: true})
                     if (recognizedText != undefined) {
                         console.log("renaming...");
                         reNameSoundFile(request.data.object.key, recognizedText);
-                        sendURLtoScrapbox(uploadedURL, recognizedText);
+                        await sendURLtoScrapbox(uploadedURL, recognizedText).catch(e => console.log(e));
                     } else {
                         console.log("認識できませんでした。");
                         const activeTab = await getActiveTab();
                         reNameSoundFile(request.data.object.key, activeTab.title);
-                        sendURLtoScrapbox(uploadedURL, activeTab.title);
+                        await sendURLtoScrapbox(uploadedURL, activeTab.title).catch(e => console.log(e));
                     }
                 } else {
                     console.log("failed to upload");
@@ -199,12 +167,13 @@ async function tabRecord() {
                     recordedChunks.length = 0;
                     const uploadedURL = `${request.data.endpoint}/sound/${request.data.object.key}`;
                     console.log(`uploadedURL : ${uploadedURL}`);
+                    //録音したタブのタイトルを取得する
                     const capturedTab = await chromep.tabCapture.getCapturedTabs();
                     const capTab = capturedTab.shift().tabId;
                     const getTab = await chromep.tabs.get(capTab);
                     await reNameSoundFile(request.data.object.key, getTab.title);
                     await pasteToClipBoard(uploadedURL);
-                    await sendURLtoScrapbox(uploadedURL, getTab.title);
+                    await sendURLtoScrapbox(uploadedURL, getTab.title).catch(e => {console.log(e)})
                 } else {
                     console.log("failed to upload");
                 }
@@ -216,18 +185,6 @@ async function tabRecord() {
     } catch (error) {
         console.log(error);
     }
-}
-
-//アクティブなタブを取ってくる関数
-async function getActiveTab(): Promise<Tab> {
-    return new Promise<Tab>(async (resolve, reject) => {
-        try {
-            const tabs = await chromep.tabs.query({active: true, currentWindow: true});
-            resolve(tabs.shift() as Tab);
-        } catch (error) {
-            reject(error);
-        }
-    })
 }
 
 function startTabRecording() {
