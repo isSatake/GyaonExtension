@@ -1,6 +1,8 @@
 import chromep from "chrome-promise";
 import getActiveTab from "./getActiveTab";
 
+//Gyaonリンクをオーディオ記法でScrapboxへ貼り付けるスクリプト
+
 async function sendURLtoScrapbox(url, title): Promise<Boolean> {
     return new Promise<Boolean>(async (resolve, reject) => {
         const activeTab = await getActiveTab();
@@ -9,7 +11,7 @@ async function sendURLtoScrapbox(url, title): Promise<Boolean> {
             await chromep.tabs.executeScript(activeTab.id, {code: `document.execCommand("insertText",false, "${pasteText}");`});
             resolve(true);
         } else {
-            reject(new Error("this is not Scrapbox"))
+            reject(new Error("this is not Scrapbox"));
         }
     });
 }
