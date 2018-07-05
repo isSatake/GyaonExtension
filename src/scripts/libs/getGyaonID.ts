@@ -8,7 +8,7 @@ function getGyaonID(): Promise<String> {
         chromep.storage.local.get("gyaonID")
             .then(item => {
                 const gyaonID: String = item.gyaonID;
-                if (gyaonID === "undefined" || gyaonID == undefined ) {
+                if (gyaonID === "undefined" || gyaonID == undefined  || gyaonID === undefined) {
                     reject(new Error("GyaonID is undefined"));
                 } else {
                     resolve(gyaonID);
