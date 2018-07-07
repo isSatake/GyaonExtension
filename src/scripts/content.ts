@@ -80,7 +80,9 @@ window.onload = async function() {
                 audioElm.src = "https://gyaon.herokuapp.com/sound/639cf42494cdecf2821f5b7f044ff67a.wav";
             } else if (item.innerText == ":goodpoem:") {
                 audioElm.src = "https://gyaon.herokuapp.com/sounds/hykwtakumin/6dab65613f44d86963d6dece2db08003.wav";
-            } else if (item.innerText == ":tada:" || item.innerText == ":congratulations:") {
+            } else if (item.innerText == ":tada:") {
+                audioElm.src = "https://gyaon.com/sound/2016-06-20%2020:31:00.wav";
+            } else if (item.innerText == ":congratulations:") {
                 audioElm.src = "https://gyaon.com/sound/2016-06-20%2020:31:00.wav";
             } else if (item.innerText == ":sugoikakumei:") {
                 audioElm.src = "https://gyaon.com/sound/367c2dc19e285e4404f0df374c0a952b.wav";
@@ -90,7 +92,6 @@ window.onload = async function() {
             audioElm.play();
         });
         item.addEventListener('mouseout', function (event) {
-            console.log("Mouse Out!");
             const audioElms = item.nextElementSibling as HTMLAudioElement;
             audioElms.pause();
             audioElms.currentTime = 0;
