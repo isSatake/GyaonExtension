@@ -7,6 +7,7 @@ import pasteToClipBoard from './libs/pasteToClipBoard';
 import reNameSoundFile from './libs/reNameSoundFile';
 import getActiveTab from './libs/getActiveTab';
 import sendURLtoScrapbox from './libs/sendURLtoScrapbox';
+import sendABCtoScrapbox from "./libs/sendABCtoScrapbox";
 
 declare var MediaRecorder: any;
 declare var webkitSpeechRecognition: any;
@@ -91,10 +92,11 @@ navigator.mediaDevices.getUserMedia({audio: true})
                     console.log(`uploadedURL : ${uploadedURL}`);
                     await pasteToClipBoard(uploadedURL);
 
-                    if (recognizedText != undefined) {
+                    if (recognizedText !== undefined) {
                         console.log("renaming...");
                         reNameSoundFile(request.data.object.key, recognizedText);
-                        await sendURLtoScrapbox(uploadedURL, recognizedText).catch(e => console.log(e));
+                        //await sendURLtoScrapbox(uploadedURL, recognizedText).catch(e => console.log(e));
+                        //await sendABCtoScrapbox(uploadedURL, recognizedText).catch(e => console.log(e));
                     } else {
                         console.log("認識できませんでした。");
                         const activeTab = await getActiveTab();
@@ -132,11 +134,16 @@ recognition.onend = function () {
     isRecognizing = false;
 };
 
-recognition.onresult = function (event) {
+recognition.onresult = async function (event) {
     const result = event.results[event.results.length - 1];
     const item = result[0];
     console.log(item.transcript);
     recognizedText = item.transcript;
+
+    //スクボにABC記法でドレミを書く
+    if (recognizedText !== undefined) {
+        await sendABCtoScrapbox(recognizedText as string).catch(e => console.log(e));
+    }
 };
 
 async function tabRecord() {

@@ -29,6 +29,7 @@
     "D": "^1.0.0",
     "axios": "^0.18.0",
     "chrome-promise": "^3.0.2",
+    "custom-translate": "^2.2.8",
     "gyaonup": "^0.0.0"
   },
   "devDependencies": {
